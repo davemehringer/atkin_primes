@@ -1,18 +1,14 @@
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
 vector<long long> sieveOfAtkin(long long limit) {
+    auto off = limit % 2 == 0 ? 5 : 6;
+    auto size = (limit - off)/2 + 1; 
     vector<bool> sieve;
-    sieve.assign(limit + 1, false);
-    if (limit > 2) {
-        sieve[2] = true;
-    }
-    if (limit > 3) {
-        sieve[3] = true;
-    }
-
+    sieve.assign(size, false);
     long long x = 1;
     long long x2 = 1;
     while (x2 <= limit) {
@@ -26,10 +22,13 @@ vector<long long> sieveOfAtkin(long long limit) {
             long long n1 = 4*x2 + y2;
             long long m1 = n1 % 12;
             if (n1 <= limit && (m1 == 1 || m1 == 5)) {
-                sieve[n1] = ! sieve[n1];
+                auto i = (n1 - 5)/2;
+                sieve[i] = ! sieve[i];
             }
             if (n2 % 12 == 7) {
-                sieve[n2] = ! sieve[n2];
+                auto i = (n2 - 5)/2;
+                sieve[i] = ! sieve[i];
+
             }
             ++y;
             y2 = y*y;
@@ -40,42 +39,51 @@ vector<long long> sieveOfAtkin(long long limit) {
             if (n3 > limit) {
                 break;
             }
-            // if (n3 <= limit && n3 % 12 == 11) {
             if (n3 % 12 == 11) {
-                sieve[n3] = ! sieve[n3];
+                auto i = (n3 - 5)/2;
+                sieve[i] = ! sieve[i];
             }
             --z;
         }
-        x += 1;
+        ++x;
         x2 = x*x;
     }
 
     long long r = 5;
     long long r2 = r*r;
     while (r2 <= limit) {
-        if (sieve[r]) {
-            for (long long i=r2; i<=limit; i+=r2) {
-                sieve[i] = false;
+        auto i = (r - 5)/2;
+        if (sieve[i]) {
+            for (long long j=r2; j<=limit; j+=2*r2) {
+                auto k = (j - 5)/2;
+                sieve[k] = false;
             }
         }
-        ++r;
+        r += 2;
         r2 = r*r;
     }
 
     vector<long long> primes;
-    long long count = 0;
+    long long num = 5;
     for (const auto& s: sieve) {
         if (s) {
-            primes.push_back(count);
+            primes.push_back(num);
         }
-        ++count;
+        num += 2;
     }
-
+    primes.insert(primes.begin(), 3);
+    primes.insert(primes.begin(), 2);
     return primes;
 }
     
-int main() {
-    auto primes = sieveOfAtkin(100000000);
+int main(int argc, char *argv[]) {
+    long long count = 100;
+    if (argc >= 2) {
+        string x(argv[1]);
+        stringstream y(x);
+        y >> count;
+    }
+    auto primes = sieveOfAtkin(count);
     cout << primes.size() << endl;
     /*
     for (const auto& p: primes) {
