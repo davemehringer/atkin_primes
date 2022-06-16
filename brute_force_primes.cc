@@ -29,8 +29,11 @@ vector<int> bruteForcePrimes(int limit) {
 
 int main() {
     auto primes = bruteForcePrimes(10000000);
+    cout << "n primes " << primes.size() << endl;
+    /*
     for (const auto& p: primes) {
         cout << p << endl;
     }
+    */
     return 0;
 }
