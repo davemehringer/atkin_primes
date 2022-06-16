@@ -1,207 +1,137 @@
+#include <future>
+#include <math.h>
 #include <iostream>
-#include <vector>
 #include <sstream>
 #include <thread>
-#include <future>
-#include <set>
-#include <chrono>
+#include <vector>
 
 using namespace std;
 
-void test(string msg) {
-    cout << msg << endl;
-}
-
-void print(const set<long long>& s) {
-    for (const auto& p: s) {
-        cout << p << " ";
-    }
-    cout << endl;
-}
-
-void print(const vector<long long>& s) {
-    for (const auto& p: s) {
-        cout << p << " ";
-    }
-    cout << endl;
-}
-
-void compute(
-    promise<set<long long>> && p, long long limit, uint threadID,
-    uint nthreads
-) {
-    set<long long> firstLoopIndices;
-    long long x = threadID + 1;
-    long long x2 = x*x;
+void first_loop(vector<bool>& sieve, long long limit, uint n_min, uint n_max) {
+    long long x = 1;
+    long long x2 = 1;
     while (x2 <= limit) {
         long long y = 1;
-        long long y2 = 1;
-        while (y2 <= limit) {
-            long long n2 = 3 * x2 + y2;
-            if (n2 > limit) {
-                break;
-            }
-            long long n1 = 4 * x2 + y2;
-            long long m1 = n1 % 12;
-            if (n1 <= limit && (m1 == 1 || m1 == 5)) {
-                auto i = (n1 - 5) / 2;
-                if (firstLoopIndices.erase(i) == 0) {
-                    firstLoopIndices.insert(i);
+        if (n_min - 4*x2 > 0) {
+            y = int(sqrt(n_min - 4*x2));
+        }
+        long long y2 = y*y;
+        while (y2 <= min(n_max - 3*x2, limit)) {
+            long long n2 = 3*x2 + y2;
+            if (n2 >= n_min && n2 <= n_max) {
+                if (n2 % 12 == 7) {
+                    auto i = (n2 - 5)/2;
+                    sieve[i] = ! sieve[i];
                 }
             }
-            if (n2 % 12 == 7) {
-                auto i = (n2 - 5) / 2;
-                if (firstLoopIndices.erase(i) == 0) {
-                    firstLoopIndices.insert(i);
+            long long n1 = 4*x2 + y2;
+            if (n1 >= n_min && n1 <= n_max) {
+                long long m1 = n1 % 12;
+                if (n1 <= limit && (m1 == 1 || m1 == 5)) {
+                    auto i = (n1 - 5)/2;
+                    sieve[i] = ! sieve[i];
                 }
             }
             ++y;
-            y2 = y * y;
+            y2 = y*y;
         }
         long long z = x;
+        if (3*x2 - n_min > 0) {
+            z = min((long long)(sqrt(3*x2 - n_min)), x);
+        }
         while (z >= 1) {
-            long long n3 = 3 * x2 - z * z;
-            if (n3 > limit) {
+            auto n3 = 3*x2 - z*z;
+            if (n3 > n_max) {
                 break;
             }
-            if (n3 % 12 == 11) {
-                auto i = (n3 - 5) / 2;
-                if (firstLoopIndices.erase(i) == 0) {
-                    firstLoopIndices.insert(i);
-                }
+            if (n3 >= n_min && n3 <= n_max && n3 % 12 == 11) {
+                auto i = (n3 - 5)/2;
+                sieve[i] = ! sieve[i];
             }
             --z;
         }
-        x += nthreads;
-        x2 = x * x;
+        ++x;
+        x2 = x*x;
     }
-    p.set_value(firstLoopIndices);
 }
 
-void computeExcludes(
-    promise<set<long long>> && p, const set<long long>& primeCandidateIndices,
-    long long limit, uint threadID, uint nthreads
-) {
-    // exclude contains the indices, not the values, that need to be
-    // excluded
-    set<long long> exclude;
-    long long r = 5 + 2*threadID;
-    long long r2 = r * r;
-    auto end = primeCandidateIndices.end();
-    while (r2 <= limit) {
-        // auto i = (r - 5) / 2;
-        if (primeCandidateIndices.find((r - 5)/2) != end) {
-            for (long long j = r2; j <= limit; j += 2 * r2) {
-                auto k = (j - 5)/2;
-                exclude.insert((j - 5)/2);
-            }
-        }
-        r += 2*nthreads;
-        r2 = r * r;
-    }
-    p.set_value(exclude);
-}
-
-set<long long> sieveOfAtkin(long long limit, int nthreads) {
-    chrono::time_point<chrono::high_resolution_clock> start
-        = chrono::high_resolution_clock::now();
+vector<long long> sieveOfAtkin(long long limit, uint nthreads) {
     auto off = limit % 2 == 0 ? 5 : 6;
-    auto size = (limit - off) / 2 + 1;
-    vector<promise<set<long long>>> promises(nthreads);
-    vector<future<set<long long>>> futures(nthreads);
+    auto size = (limit - off)/2 + 1; 
+    vector<bool> sieve(size, false);
+    /*
+    vector<promise<vector<long long>>> promises(nthreads);
+    vector<future<vector<long long>>> futures(nthreads);
     for (uint i=0; i<nthreads; ++i) {
         futures[i] = promises[i].get_future();
     }
-    vector<unique_ptr<thread>> threads(nthreads);
+    */
+    vector<thread> threads(nthreads);
+    uint n_min = 0;
+    uint n_max = 0;
+    uint n_nom = int((limit - 4)/nthreads) - 1;
+    uint mod = (limit - 4) % nthreads;
+    // cout << "mod " << mod << endl;
     for (uint i = 0; i < nthreads; ++i) {
-        threads[i].reset(
-            new thread(&compute, move(promises[i]), limit, i, nthreads)
-        );
+        n_min = i == 0 ? 5 : n_max + 1;
+        n_max = n_min + n_nom;
+        if (i < mod) {
+            ++n_max;
+        }
+        // cout << "n_min " << n_min << " n_max " << n_max << endl;
+        threads[i] = thread(&first_loop, /*move(promises[i]),*/ ref(sieve), limit, n_min, n_max);
     }
-    // auto sbegin = sieve.begin();
-    // auto send = sieve.end();
-    set<long long> primeIndices;
-    
-    vector<set<long long>> initialLoopRes(nthreads);
     for (uint i=0; i<nthreads; ++i) {
-        threads[i]->join();
-        initialLoopRes[i] = futures[i].get();
+        threads[i].join();
     }
-    chrono::time_point<chrono::high_resolution_clock> stop
-        = chrono::high_resolution_clock::now();
-    chrono::duration<double> d = stop - start;
-    cout << "duration 1 " << d.count() << endl;
-
-
-    set<long long> primeCandidateIndices;
-    for (uint i=0; i<nthreads; ++i) {
-        auto& target = initialLoopRes[i];
-        for (auto iter=target.begin(); iter!=target.end(); ++iter) {
-            auto index = *iter;
-            uint count = 1;
-            for (uint j=i+1; j<nthreads; ++j) {
-                auto& comp = initialLoopRes[j];
-                count += comp.erase(index);
-            }
-            if (count % 2 == 1) {
-                primeCandidateIndices.insert(index);
+    //first_loop(sieve, limit);
+    long long r = 5;
+    long long r2 = r*r;
+    while (r2 <= limit) {
+        auto i = (r - 5)/2;
+        if (sieve[i]) {
+            for (long long j=r2; j<=limit; j+=2*r2) {
+                auto k = (j - 5)/2;
+                sieve[k] = false;
             }
         }
+        r += 2;
+        r2 = r*r;
     }
-    
-    vector<promise<set<long long>>> promises2(nthreads);
-    vector<future<set<long long>>> futures2(nthreads);
-    for (uint i=0; i<nthreads; ++i) {
-        futures2[i] = promises2[i].get_future();
+
+    vector<long long> primes;
+    long long num = 5;
+    for (const auto& s: sieve) {
+        if (s) {
+            primes.push_back(num);
+        }
+        num += 2;
     }
-    for (uint i = 0; i < nthreads; ++i) {
-        threads[i].reset(
-            new thread(&computeExcludes, move(promises2[i]), primeCandidateIndices,
-            limit, i, nthreads)
-        );
-    }
-    vector<set<long long>> excludes(nthreads);
-    for (uint i=0; i<nthreads; ++i) {
-        threads[i]->join();
-        excludes[i] = futures2[i].get();
-        for (auto iter=excludes[i].begin(); iter!=excludes[i].end(); ++iter) {
-            primeCandidateIndices.erase(*iter);
-        } 
-    }
-    // print(excludes);
-    /*
-    for (const auto e: excludes) {
-        primeIndices.erase(e);
-    }
-    */
-    set<long long> primes;
-    primes.insert(2);
-    primes.insert(3);
-    for (const auto i: primeCandidateIndices) {
-        primes.insert(2*i + 5);
-    }
+    primes.insert(primes.begin(), 3);
+    primes.insert(primes.begin(), 2);
     return primes;
 }
-
-long long stringToInt(const char *s) {
-    string x(s);
-    stringstream y(x);
-    long long z;
-    y >> z;
-    return z;
-}
-
+    
 int main(int argc, char *argv[]) {
     long long count = 100;
     uint nthreads = 1;
     if (argc >= 2) {
-        count = stringToInt(argv[1]);
-        if (argc >= 3) {
-            nthreads = (int)stringToInt(argv[2]);
+        string x(argv[1]);
+        stringstream y(x);
+        y >> count;
+    }
+    if (argc >= 3) {
+        string x(argv[2]);
+        stringstream y(x);
+        y >> nthreads;
+    }
+    //cout << "count " << count << " nthreads " << nthreads << endl;
+    auto primes = sieveOfAtkin(count, nthreads);
+    cout << primes.size() << endl;
+    if (count <= 1000) {
+        for (const auto& p: primes) {
+            cout << p << endl;
         }
     }
-    auto primes = sieveOfAtkin(count, nthreads);
-    // print(primes);
-    cout << "n primes " << primes.size() << endl;
     return 0;
 }
