@@ -17,17 +17,17 @@ void first_loop(
         const auto _4x2 = 4*x2;
         size_t y = 1;
         size_t y2 = 1;
-        /*
-        if (_4x2 > n_min) {
-            y2 = _4x2 - n_min;
-            y = sqrt(y2);
+        if (n_min > _4x2) {
+            y2 = n_min - _4x2;
+            y = sqrt(y2) - 1;
+            y2 = y*y;
         }
-        size_t y2_stop = 0;
+        size_t y2_stop = n_max;
         if (n_max > _3x2) {
             y2_stop = n_max - _3x2;
         }
-        */
-        while (y2 <= n_max) {
+        // while (y2 <= n_max) {
+        while (y2 <= y2_stop) {
             auto n2 = _3x2 + y2;
             if (n2 >= n_min && n2 <= n_max  && n2 % 12 == 7) {
                 auto i = (n2 - 5)/2;
@@ -94,9 +94,14 @@ vector<size_t> sieveOfAtkin(size_t limit, uint nthreads) {
     vector<uint> n_max(nthreads, 0);
     uint n_nom = int((limit - 4)/nthreads) - 1;
     uint mod = (limit - 4) % nthreads;
+    auto inc = (limit - off)/nthreads;
+    //auto fac = pow(limit-off, 1.0/nthreads);
+    //cout << "fac " << fac << endl;
+    //auto zfac = fac;
     for (uint i = 0; i < nthreads; ++i) {
         n_min[i] = i == 0 ? off : n_max[i-1] + 1;
-        n_max[i] = n_min[i] + n_nom;
+        n_max[i] = i == nthreads - 1 ? limit : n_min[i] + inc + off;
+        //zfac *= fac;
         if (i < mod) {
             ++n_max[i];
         }
@@ -181,7 +186,8 @@ int main(int argc, char *argv[]) {
     }
     auto primes = sieveOfAtkin(count, nthreads);
     cout << primes.size() << endl;
-    
+   
+
     if (count <= 1000) {
         for (const auto& p: primes) {
             cout << p << endl;
