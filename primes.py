@@ -21,6 +21,9 @@ def reset():
 
 def __do_n1(lower, upper, x, sieve, myid=None):
     _4x2 = 4*x*x
+    end = upper - _4x2
+    if end <= 0:
+        return
     t2 = lower - _4x2
     y = int(math.sqrt(t2)) if t2 >= 9 else 1
     if y % 2 == 0:
@@ -29,7 +32,6 @@ def __do_n1(lower, upper, x, sieve, myid=None):
     while y2 < t2:
         y += 2
         y2 = y*y
-    end = upper - _4x2
     if x % 3 > 0:
         while y2 <= end:
             sieve[y2 - t2] ^= True
@@ -41,9 +43,7 @@ def __do_n1(lower, upper, x, sieve, myid=None):
             y2 = y*y
         while y2 <= end:
             sieve[y2 - t2] ^= True
-            y += 2
-            if y % 3 == 0:
-                y += 2
+            y += 4 if y % 3 == 1 else 2
             y2 = y*y
 
 
@@ -75,42 +75,34 @@ def __do_n3(lower, upper, x, sieve):
 def __do_n2_n3(lower, upper, x, sieve, myid=None, tm=None):
     _3x2 = 3*x*x
     t2 = lower - _3x2
-    if x % 2 == 1:
-        y = int(math.sqrt(t2)) if t2 >= 9 else 1
+    end = upper - _3x2
+    if end > 0 and x % 2 == 1:
+        y = int(math.sqrt(t2)) if t2 >= 9 else 2
         if y % 2 == 1:
             y += 1
-        y2 = y*y
-        if y2 < t2:
+        if y*y < t2:
             y += 2
-            y2 = y*y
         if y % 6 == 0:
             y += 2
-            y2 = y*y
-        end = upper - _3x2
+        y2 = y*y
         while y2 <= end:
             sieve[y2 - t2] ^= True
-            y = y + 2 if y % 3 == 2 else y + 4
+            y += 2 if y % 3 == 2 else 4
             y2 = y*y
-    y = 1
     low_limit = _3x2 - upper
-    if low_limit > 9:
-        y = int(math.sqrt(low_limit))
+    y = int(math.sqrt(low_limit)) if low_limit >= 9 else 1
+    if (x % 2 + y % 2) % 2 == 0:
+        y += 1
+    if y*y < low_limit:
+        y += 2
+    if y % 3 == 0:
+        y += 2
     if y < x:
-        if (x % 2 + y % 2) % 2 == 0:
-            y += 1
         y2 = y*y
-        if y2 < low_limit:
-            y += 2
-            y2 = y*y
-        if y % 3 == 0:
-            y += 2
-            y2 = y*y
         up_limit = -t2
         while y < x and y2 <= up_limit:
             sieve[-t2 - y2] ^= True
-            y += 2
-            if y % 3 == 0:
-                y += 2
+            y += 4 if y % 3 == 1 else 2
             y2 = y*y
 
 
@@ -149,10 +141,11 @@ def __do_r(lower, upper, sieve, myid=None):
         start = r2 * (int(lower/r2) + 1)
         if start % 2 == 0:
             start = start - r2 if start - r2 > 0 else start + r2
+        while start < lower:
+            start += 2*r2
         for i in range(start, upper+1, 2*r2):
             # __loop_counts[myid] += 1
-            if i <= upper and i >= lower:
-                sieve[i - lower] = False
+            sieve[i - lower] = False
         r += 2
         r2 = r*r
 
