@@ -225,7 +225,17 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
         if (x == 3) {
             while (_4x2 < upper) {
                 y = init_y_for_n1(lower, _4x2, t2);
-                do_n1_x_mod_3_is_0(sieve, y, end, t2, myid);
+                // do_n1_x_mod_3_is_0(sieve, y, end, t2, myid);
+                if (y % 3 == 0) {
+                    y += 2;
+	            }
+                y2 = y*y;
+                while (y2 <= end) {
+                    j2 = y2 - t2;
+                    sieve[j2] = ! sieve[j2];
+                    y += y % 3 == 1 ? 4 : 2;
+                    y2 = y*y;
+                }
                 x += 3;
                 _4x2 = 4*x*x;
                 end = upper - _4x2;
