@@ -219,10 +219,10 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     size_x y = 1;
     size_x y2 = 1;
     for (size_x i=1; i<4; ++i) {
-        x = i;
-         _4x2 = 4*x*x;
-        end = upper - _4x2;
-        if (x == 3) {
+        // x = i;
+        // _4x2 = 4*x*x;
+        //end = upper - _4x2;
+        if (i == 3) {
             for (size_x k=1; k<3; k++) {
                 x = 3;
                 _4x2 = 4*x*x;
@@ -246,6 +246,9 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
             }
         }
         else {
+            x = i;
+             _4x2 = 4*x*x;
+            end = upper - _4x2;
             while (_4x2 < upper) {
                 y = init_y_for_n1(lower, _4x2, t2);
                 y2 = y*y;
