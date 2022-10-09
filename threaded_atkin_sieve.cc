@@ -262,8 +262,54 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     }
     x = 1;
     x2 = 1;
+    auto _3x2 = 3*x2;
     while (x2 <= upper) {
-        do_n2_n3(lower, upper, x, sieve, myid);
+        // do_n2_n3(lower, upper, x, sieve, myid);
+        _3x2 = 3*x2;
+        t2 = lower - _3x2;
+        end = upper - _3x2;
+        if (end > 0 && x % 2 == 1) {
+            y = t2 >= 9 ? size_x(sqrt(t2)) : 2;
+            if (y % 2 == 1) {
+                y += 1;
+		    }
+            if (y*y < t2) {
+                y += 2;
+		    }
+            if (y % 6 == 0) {
+                y += 2;
+		    }
+            y2 = y*y;
+            while (y2 <= end) {
+                j2 = y2 - t2;
+                sieve[j2] = ! sieve[j2];
+                y = y % 3 == 2 ? y + 2 : y + 4;
+                y2 = y*y;
+            }
+	    }
+        auto low_limit = _3x2 - upper;
+        y = low_limit > 9 ? size_x(sqrt(low_limit)) : 1;
+        if (y < x) {
+            if ( (x % 2 + y % 2) % 2 == 0) {
+                y += 1;
+		    }
+            if (y*y < low_limit) {
+                y += 2;
+		    }
+            if (y % 3 == 0) {
+                y += 2;
+		    }
+            if (y < x) {
+                y2 = y*y;
+                auto up_limit = -t2;
+                while (y < x and y2 <= up_limit) {
+                    j2 = -(t2 + y2);
+                    sieve[j2] = ! sieve[j2];
+                    y += y % 3 == 1 ? 4 : 2;
+			        y2 = y*y;
+		        }
+            }
+	    }
         x += 1;
         x2 = x*x;
     }
