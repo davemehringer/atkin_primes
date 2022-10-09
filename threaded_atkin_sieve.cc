@@ -219,9 +219,6 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     size_x y = 1;
     size_x y2 = 1;
     for (size_x i=1; i<4; ++i) {
-        // x = i;
-        // _4x2 = 4*x*x;
-        //end = upper - _4x2;
         if (i == 3) {
             for (size_x k=1; k<3; k++) {
                 x = 3;
@@ -267,18 +264,12 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     }
     x = 1;
     x2 = 1;
-    // cout << "line " << __LINE__ << endl;
     while (x2 <= upper) {
         do_n2_n3(lower, upper, x, sieve, myid);
         x += 1;
         x2 = x*x;
     }
-    // cout << "line " << __LINE__ << endl;
     do_r(lower, upper, sieve, myid);
-    // cout << "line " << __LINE__ << endl;
-    // cout << sieve << endl;
-    // auto debug = trueIndices(lower, sieve);
-    // cout << debug << endl;
     return trueIndices(lower, sieve);
 }
 
