@@ -223,22 +223,34 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
          _4x2 = 4*x*x;
         end = upper - _4x2;
         if (x == 3) {
-            while (_4x2 < upper) {
-                y = init_y_for_n1(lower, _4x2, t2);
-                // do_n1_x_mod_3_is_0(sieve, y, end, t2, myid);
-                if (y % 3 == 0) {
-                    y += 2;
-	            }
-                y2 = y*y;
-                while (y2 <= end) {
-                    j2 = y2 - t2;
-                    sieve[j2] = ! sieve[j2];
-                    y += y % 3 == 1 ? 4 : 2;
-                    y2 = y*y;
-                }
-                x += 3;
+            for (size_x k=1; k<3; k++) {
+                x = 3;
                 _4x2 = 4*x*x;
                 end = upper - _4x2;
+                while (_4x2 < upper) {
+                    // cout << "_4x2 " << _4x2 << " lower " << lower << endl;
+                    y = init_y_for_n1(lower, _4x2, t2);
+                    // cout << "returned t2 " << t2 << endl;
+                    // cout << "y from init " << y << endl;
+                    while ((y % 3) != k) {
+                    //if (y % 3 == 0) {
+                        y += 2;
+	                }
+                    // cout << "x " << x << " start y " << y << " lower " << lower << endl;
+                    y2 = y*y;
+                    while (y2 <= end) {
+                        j2 = y2 - t2;
+                        // cout << "y " << y << " y2 " << y2 << " t2 " << t2 << " j2 " << j2 << " j2 + lower " << j2 + lower << endl;
+                        sieve[j2] = ! sieve[j2];
+                        //y += y % 3 == 1 ? 4 : 2;
+                        y += 6;
+                        y2 = y*y;
+                    }
+                    // cout << endl;
+                    x += 3;
+                    _4x2 = 4*x*x;
+                    end = upper - _4x2;
+                }
             }
         }
         else {
