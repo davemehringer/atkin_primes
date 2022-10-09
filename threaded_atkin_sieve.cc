@@ -11,12 +11,34 @@ using size_x = long;
 
 using namespace std;
 
-void do_n1(size_x lower, size_x upper, size_x x, vector<bool>& sieve, int myid=-1) {
+
+inline size_x init_y_for_n1(size_x lower, size_x _4x2, size_x& t2) {
+    t2 = lower - _4x2;
+    auto y = t2 >= 9 ? size_x(sqrt(t2)) : 1;
+    if (y % 2 == 0) {
+        y += 1;
+	}
+    auto y2 = y*y;
+    while (y2 < t2) {
+        y += 2;
+        y2 = y*y;
+	}
+    return y;
+}
+
+
+
+void do_n1(
+    size_x lower, size_x upper, size_x x, vector<bool>& sieve,
+    size_x _4x2, size_x end, int myid=-1
+) {
+    /*
     auto _4x2 = 4*x*x;
     auto end = upper - _4x2;
     if (end <= 0) {
        return;
     }
+    */
     auto t2 = lower - _4x2;
     auto y = t2 >= 9 ? size_x(sqrt(t2)) : 1;
     if (y % 2 == 0) {
@@ -49,6 +71,40 @@ void do_n1(size_x lower, size_x upper, size_x x, vector<bool>& sieve, int myid=-
         }
     }
 }
+
+
+void do_n1_x_mod_3_is_0(
+    vector<bool>& sieve, size_x y, size_x end, size_x t2, int myid=-1
+) {
+    auto y2 = y*y;
+    size_x j2 = 0;
+    if (y % 3 == 0) {
+        y += 2;
+        y2 = y*y;
+	}
+    while (y2 <= end) {
+        j2 = y2 - t2;
+        sieve[j2] = ! sieve[j2];
+        y += y % 3 == 1 ? 4 : 2;
+        y2 = y*y;
+    }
+}
+
+
+void do_n1_x_mod_3_is_not_0(
+    vector<bool>& sieve, size_x y, size_x end, size_x t2, int myid=-1
+) {
+    auto y2 = y*y;
+    auto j2 = 0;
+    while (y2 <= end) {
+        j2 = y2 - t2;
+        sieve[j2] = ! sieve[j2];
+        y += 2;
+        y2 = y*y;
+	}
+}
+
+
 
 void do_n2_n3(size_x lower, size_x upper, size_x x, vector<bool>& sieve, int myid=-1) {
     auto _3x2 = 3*x*x;
@@ -156,14 +212,102 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     vector<bool> sieve(upper - lower + 1, false);
     size_x x = 1;
     auto x2 = x*x;
+    auto _4x2 = 4*x2;
     auto end = upper - 4*x2;
-    while (x2 <= upper && end > 0) {
-        do_n1(lower, upper, x, sieve, myid);
+    size_x t2 = 0;
+    size_x j2 = 0;
+    size_x y = 1;
+    size_x y2 = 1;
+    while (_4x2 < upper) {
+        if (x % 3 == 0) {
+            y = init_y_for_n1(lower, _4x2, t2);
+            do_n1_x_mod_3_is_0(sieve, y, end, t2, myid);
+        }
+        else {
+            y = init_y_for_n1(lower, _4x2, t2);
+            do_n1_x_mod_3_is_not_0(sieve, y, end, t2, myid);
+        }
+        ++x;
+        _4x2 = 4*x*x;
+        end = upper - _4x2;
+    }
+    /*
+    x = 1;
+    _4x2 = 4*x*x;
+    end = upper - 4*x2;
+    while (_4x2 < upper) {
+        y = init_y_for_n1(lower, _4x2, t2);
+        ++x;
+        _4x2 = 4*x*x;
+        end = upper - 4*x2;
+    }
+    */
+    // cout << "line " << __LINE__ << endl;
+    /*
+    for (size_x i=1; i<4; ++i) {
+        // x = i;
+        //x2 = x*x;
+        // _4x2 = 4*x*x;
+        // end = upper - _4x2;
+        // t2 = 0;
+        if (i == 3) {
+            for (size_x k=1; k<3; ++k) {
+                x = i;
+                _4x2 = 4*x*x;
+                end = upper - _4x2;
+                while (_4x2 <= upper) {
+                    y = init_y_for_n1(lower, _4x2, t2);
+                    while (y % 3 != k) {
+                        y += 2;
+	                }
+                    y2 = y*y;
+                    while (y2 <= end) {
+                        j2 = y2 - t2;
+                        sieve[j2] = ! sieve[j2];
+                        y += 6;
+                        y2 = y*y;
+                    }
+                    x += 3;
+                    _4x2 = 4*x*x;
+                    end = upper - _4x2;
+                }
+            }
+        }
+        else {
+            x = i;
+            _4x2 = 4*x*x;
+            end = upper - _4x2;
+            while (_4x2 <= upper) {
+                y = init_y_for_n1(lower, _4x2, t2);
+                y2 = y*y;
+                while (y2 <= end) {
+                    j2 = y2 - t2;
+                    sieve[j2] = ! sieve[j2];
+                    y += 3;
+                    y2 = y*y;
+                }
+                x += 3;
+                _4x2 = 4*x*x;
+                end = upper - _4x2;
+		    }
+        }
+    }
+    */
+    // cout << "line " << __LINE__ << endl;
+    x = 1;
+    x2 = 1;
+    // cout << "line " << __LINE__ << endl;
+    while (x2 <= upper) {
         do_n2_n3(lower, upper, x, sieve, myid);
         x += 1;
         x2 = x*x;
     }
+    // cout << "line " << __LINE__ << endl;
     do_r(lower, upper, sieve, myid);
+    // cout << "line " << __LINE__ << endl;
+    // cout << sieve << endl;
+    // auto debug = trueIndices(lower, sieve);
+    // cout << debug << endl;
     return trueIndices(lower, sieve);
 }
 
