@@ -218,18 +218,28 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     size_x j2 = 0;
     size_x y = 1;
     size_x y2 = 1;
-    while (_4x2 < upper) {
-        if (x % 3 == 0) {
-            y = init_y_for_n1(lower, _4x2, t2);
-            do_n1_x_mod_3_is_0(sieve, y, end, t2, myid);
+    for (size_x i=1; i<4; ++i) {
+        x = i;
+         _4x2 = 4*x*x;
+        end = upper - _4x2;
+        if (x == 3) {
+            while (_4x2 < upper) {
+                y = init_y_for_n1(lower, _4x2, t2);
+                do_n1_x_mod_3_is_0(sieve, y, end, t2, myid);
+                x += 3;
+                _4x2 = 4*x*x;
+                end = upper - _4x2;
+            }
         }
         else {
-            y = init_y_for_n1(lower, _4x2, t2);
-            do_n1_x_mod_3_is_not_0(sieve, y, end, t2, myid);
+            while (_4x2 < upper) {
+                y = init_y_for_n1(lower, _4x2, t2);
+                do_n1_x_mod_3_is_not_0(sieve, y, end, t2, myid);
+                x += 3;
+                _4x2 = 4*x*x;
+                end = upper - _4x2;
+            }
         }
-        ++x;
-        _4x2 = 4*x*x;
-        end = upper - _4x2;
     }
     /*
     x = 1;
