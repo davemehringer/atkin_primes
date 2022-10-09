@@ -228,25 +228,17 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
                 _4x2 = 4*x*x;
                 end = upper - _4x2;
                 while (_4x2 < upper) {
-                    // cout << "_4x2 " << _4x2 << " lower " << lower << endl;
                     y = init_y_for_n1(lower, _4x2, t2);
-                    // cout << "returned t2 " << t2 << endl;
-                    // cout << "y from init " << y << endl;
                     while ((y % 3) != k) {
-                    //if (y % 3 == 0) {
                         y += 2;
 	                }
-                    // cout << "x " << x << " start y " << y << " lower " << lower << endl;
                     y2 = y*y;
                     while (y2 <= end) {
                         j2 = y2 - t2;
-                        // cout << "y " << y << " y2 " << y2 << " t2 " << t2 << " j2 " << j2 << " j2 + lower " << j2 + lower << endl;
                         sieve[j2] = ! sieve[j2];
-                        //y += y % 3 == 1 ? 4 : 2;
                         y += 6;
                         y2 = y*y;
                     }
-                    // cout << endl;
                     x += 3;
                     _4x2 = 4*x*x;
                     end = upper - _4x2;
@@ -256,7 +248,6 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
         else {
             while (_4x2 < upper) {
                 y = init_y_for_n1(lower, _4x2, t2);
-                // do_n1_x_mod_3_is_not_0(sieve, y, end, t2, myid);
                 y2 = y*y;
                 j2 = 0;
                 while (y2 <= end) {
@@ -271,69 +262,6 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
             }
         }
     }
-    /*
-    x = 1;
-    _4x2 = 4*x*x;
-    end = upper - 4*x2;
-    while (_4x2 < upper) {
-        y = init_y_for_n1(lower, _4x2, t2);
-        ++x;
-        _4x2 = 4*x*x;
-        end = upper - 4*x2;
-    }
-    */
-    // cout << "line " << __LINE__ << endl;
-    /*
-    for (size_x i=1; i<4; ++i) {
-        // x = i;
-        //x2 = x*x;
-        // _4x2 = 4*x*x;
-        // end = upper - _4x2;
-        // t2 = 0;
-        if (i == 3) {
-            for (size_x k=1; k<3; ++k) {
-                x = i;
-                _4x2 = 4*x*x;
-                end = upper - _4x2;
-                while (_4x2 <= upper) {
-                    y = init_y_for_n1(lower, _4x2, t2);
-                    while (y % 3 != k) {
-                        y += 2;
-	                }
-                    y2 = y*y;
-                    while (y2 <= end) {
-                        j2 = y2 - t2;
-                        sieve[j2] = ! sieve[j2];
-                        y += 6;
-                        y2 = y*y;
-                    }
-                    x += 3;
-                    _4x2 = 4*x*x;
-                    end = upper - _4x2;
-                }
-            }
-        }
-        else {
-            x = i;
-            _4x2 = 4*x*x;
-            end = upper - _4x2;
-            while (_4x2 <= upper) {
-                y = init_y_for_n1(lower, _4x2, t2);
-                y2 = y*y;
-                while (y2 <= end) {
-                    j2 = y2 - t2;
-                    sieve[j2] = ! sieve[j2];
-                    y += 3;
-                    y2 = y*y;
-                }
-                x += 3;
-                _4x2 = 4*x*x;
-                end = upper - _4x2;
-		    }
-        }
-    }
-    */
-    // cout << "line " << __LINE__ << endl;
     x = 1;
     x2 = 1;
     // cout << "line " << __LINE__ << endl;
