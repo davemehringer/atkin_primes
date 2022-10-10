@@ -145,7 +145,7 @@ void do_n2_n3(size_x lower, size_x upper, size_x x, vector<bool>& sieve, int myi
         if (y < x) {
             auto y2 = y*y;
             auto up_limit = -t2;
-            while (y < x and y2 <= up_limit) {
+            while (y < x && y2 <= up_limit) {
                 j2 = -(t2 + y2);
                 sieve[j2] = ! sieve[j2];
                 y += y % 3 == 1 ? 4 : 2;
@@ -310,7 +310,7 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
 		    }
             if (y < x) {
                 y2 = y*y;
-                while (y < x and y2 <= up_limit) {
+                while (y < x && y2 <= up_limit) {
                     j2 = -(t2 + y2);
                     sieve[j2] = ! sieve[j2];
                     y += y % 3 == 1 ? 4 : 2;
