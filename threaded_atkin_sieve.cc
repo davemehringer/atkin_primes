@@ -211,9 +211,9 @@ template <class T> ostream& operator<<(ostream& os, const vector<T>& elements) {
 vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     vector<bool> sieve(upper - lower + 1, false);
     size_x x = 1;
-    auto x2 = x*x;
-    auto _4x2 = 4*x2;
-    auto end = upper - 4*x2;
+    size_x x2 = x*x;
+    size_x _4x2 = 4*x2;
+    size_x end = upper - _4x2;
     size_x t2 = 0;
     size_x j2 = 0;
     size_x y = 1;
@@ -260,38 +260,47 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
             }
         }
     }
-    x = 1;
-    x2 = 1;
-    auto _3x2 = 3*x2;
-    _3x2 = 3*x2;
-    while (_3x2 < upper) {
-        t2 = lower - _3x2;
-        end = upper - _3x2;
-        y = t2 >= 9 ? size_x(sqrt(t2)) : 2;
-        if (y % 2 == 1) {
-            y += 1;
-		}
-        if (y*y < t2) {
-            y += 2;
-		}
-        if (y % 6 == 0) {
-            y += 2;
-		}
-        y2 = y*y;
-        while (y2 <= end) {
-            j2 = y2 - t2;
-            sieve[j2] = ! sieve[j2];
-            y = y % 3 == 2 ? y + 2 : y + 4;
-            y2 = y*y;
-        }
-        x += 2;
-        x2 = x*x;
+    size_x _3x2 = 0;
+    for (size_x k=2; k<6; k+=2) {
+        x = 1;
+        x2 = 1;
         _3x2 = 3*x2;
+        while (_3x2 < upper) {
+            t2 = lower - _3x2;
+            end = upper - _3x2;
+            y = t2 >= 9 ? size_x(sqrt(t2)) : k;
+            if (y % 2 == 1) {
+                y += 1;
+		    }
+            if (y*y < t2) {
+                y += 2;
+		    }
+            while ((y % 6) != k) {
+                y += 2;
+            }
+            //cout << "x " << x << " y start " << y << " k " << k << endl;
+            /*
+            if (y % 6 == 0) {
+                y += 2;
+		    }
+            */
+            y2 = y*y;
+            while (y2 <= end) {
+                j2 = y2 - t2;
+                sieve[j2] = ! sieve[j2];
+                // y = y % 3 == 2 ? y + 2 : y + 4;
+                y += 6;
+                y2 = y*y;
+            }
+            x += 2;
+            x2 = x*x;
+            _3x2 = 3*x2;
+        }
     }
     x = 1;
     x2 = 1;
     while (x2 <= upper) {
-        _3x2 = 3*x2;
+        _3x2 = 3*x*x;
         t2 = lower - _3x2;
         auto low_limit = _3x2 - upper;
         y = low_limit > 9 ? size_x(sqrt(low_limit)) : 1;
