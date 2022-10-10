@@ -263,8 +263,8 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     size_x _3x2 = 0;
     for (size_x k=2; k<6; k+=2) {
         x = 1;
-        x2 = 1;
-        _3x2 = 3*x2;
+        // x2 = 1;
+        _3x2 = 3*x*x;
         while (_3x2 < upper) {
             t2 = lower - _3x2;
             end = upper - _3x2;
@@ -278,31 +278,25 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
             while ((y % 6) != k) {
                 y += 2;
             }
-            //cout << "x " << x << " y start " << y << " k " << k << endl;
-            /*
-            if (y % 6 == 0) {
-                y += 2;
-		    }
-            */
             y2 = y*y;
             while (y2 <= end) {
                 j2 = y2 - t2;
                 sieve[j2] = ! sieve[j2];
-                // y = y % 3 == 2 ? y + 2 : y + 4;
                 y += 6;
                 y2 = y*y;
             }
             x += 2;
-            x2 = x*x;
-            _3x2 = 3*x2;
+            // x2 = x*x;
+            _3x2 = 3*x*x;
         }
     }
     x = 1;
     x2 = 1;
+    size_x low_limit = 0;
     while (x2 <= upper) {
         _3x2 = 3*x*x;
         t2 = lower - _3x2;
-        auto low_limit = _3x2 - upper;
+        low_limit = _3x2 - upper;
         y = low_limit > 9 ? size_x(sqrt(low_limit)) : 1;
         if (y < x) {
             if ( (x % 2 + y % 2) % 2 == 0) {
