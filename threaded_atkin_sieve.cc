@@ -288,38 +288,38 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
             _3x2 = 3*x*x;
         }
     }
-    x = 1;
-    x2 = 1;
     size_x low_limit = 0;
-    size_x up_limit = 0;
-    while (x2 <= upper) {
-        _3x2 = 3*x*x;
-        t2 = lower - _3x2;
-        low_limit = _3x2 - upper;
-        up_limit = -t2;
-        y = low_limit > 9 ? size_x(sqrt(low_limit)) : 1;
-        if (y < x) {
-            if ( (x % 2 + y % 2) % 2 == 0) {
-                y += 1;
-		    }
-            if (y*y < low_limit) {
-                y += 2;
-		    }
-            if (y % 3 == 0) {
-                y += 2;
-		    }
+    for (size_x k=1; k<3; ++k) {
+        x = 1;
+        x2 = 1;
+        while (x2 <= upper) {
+            _3x2 = 3*x2;
+            t2 = lower - _3x2;
+            low_limit = _3x2 - upper;
+            y = low_limit > 9 ? size_x(sqrt(low_limit)) : 1;
             if (y < x) {
-                y2 = y*y;
-                while (y < x && y2 <= up_limit) {
-                    j2 = -(t2 + y2);
-                    sieve[j2] = ! sieve[j2];
-                    y += y % 3 == 1 ? 4 : 2;
-			        y2 = y*y;
+                if ( (x % 2 + y % 2) % 2 == 0) {
+                    y += 1;
 		        }
-            }
-	    }
-        x += 1;
-        x2 = x*x;
+                if (y*y < low_limit) {
+                    y += 2;
+		        }
+                while (y % 3 != k) {
+                    y += 2;
+                }
+                if (y < x) {
+                    y2 = y*y;
+                    while (y < x && y2 <= -t2) {
+                        j2 = -(t2 + y2);
+                        sieve[j2] = ! sieve[j2];
+                        y += 6;
+			            y2 = y*y;
+		            }
+                }
+	        }
+            x += 1;
+            x2 = x*x;
+        }
     }
     do_r(lower, upper, sieve, myid);
     return trueIndices(lower, sieve);
