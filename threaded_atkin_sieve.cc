@@ -208,6 +208,22 @@ template <class T> ostream& operator<<(ostream& os, const vector<T>& elements) {
     return os;
 }
 
+template <class T> ostream& operator<<(ostream& os, const vector<vector<T>>& v) {
+    os << "[";
+    for (uint j=0; j<v.size(); ++j) {
+        for (uint i=0; i<v[j].size(); ++i) {
+            os << v[j][i];
+            if (i < v[j].size() - 1 || j < v.size() - 1) {
+                os << ", ";
+            }
+        }
+    }
+    os << "]";
+    return os;
+}
+
+
+
 
 ContType sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     vector<bool> sieve(upper - lower + 1, false);
@@ -325,7 +341,7 @@ ContType sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
 }
 
 
-ContType do_pools(size_x lower, size_x upper, uint ncores) {
+vector<ContType> do_pools(size_x lower, size_x upper, uint ncores) {
     auto n = upper - lower;
     if (n < ncores) {
         ncores = n;
@@ -333,7 +349,7 @@ ContType do_pools(size_x lower, size_x upper, uint ncores) {
     auto inc = size_x(n/ncores);
     thread t[ncores];
     future<ContType> f[ncores];
-    ContType result;
+    vector<ContType> result;
     size_x s0 = 0;
     size_x e0 = 0;
     for (unsigned int i=0; i<ncores; ++i) {
@@ -345,8 +361,8 @@ ContType do_pools(size_x lower, size_x upper, uint ncores) {
     }
     for (unsigned int i=0; i<ncores; ++i) {
         t[i].join();
-        auto v = f[i].get();
-        result.insert(result.end(), v.begin(), v.end());
+        result.push_back(f[i].get());
+        // result.insert(result.end(), v.begin(), v.end());
     }
     return result;
 }
@@ -354,7 +370,7 @@ ContType do_pools(size_x lower, size_x upper, uint ncores) {
 
 ContType primes {2, 3, 5, 7, 11, 13, 17, 19, 23};
 
-ContType sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool update=true) {
+vector<ContType> sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool update=true) {
     if (lower < 2) {
         throw runtime_error("lower cannot be less than 2");
     }
@@ -362,19 +378,27 @@ ContType sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool update=
     if (upper < last) {
         auto low_idx = lower_bound(primes.begin(), primes.end(), lower);
         auto high_idx = upper_bound(primes.begin(), primes.end(), upper);
-        return ContType(low_idx, high_idx);
+        return vector<ContType> { ContType(low_idx, high_idx) };
     }
     auto orig_lower = lower;
-    if (lower < last or update) {
+    ContType r;
+    if (lower < last /* or update */) {
+        auto low_idx = lower_bound(primes.begin(), primes.end(), orig_lower);
+        r = ContType(low_idx, primes.end()); 
         lower = last + 2;
     }
-    ContType p;
+    vector<ContType> p;
     if (ncores == 1) {
-        p = sieve_of_atkin_loops(lower, upper);
+        p.push_back(sieve_of_atkin_loops(lower, upper));
     }
     else {
         p = do_pools(lower, upper, ncores);
     }
+    if (r.size() != 0) {
+        p.insert(p.begin(), r);
+    }
+    return p;
+    /*
     if (update) {
         primes.insert(primes.end(), p.begin(), p.end());
         auto low_idx = lower_bound(primes.begin(), primes.end(), orig_lower);
@@ -393,6 +417,7 @@ ContType sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool update=
         auto high_idx = upper_bound(q->begin(), q->end(), upper);
         return ContType(low_idx, high_idx);
     }
+    */
 }
 
 
@@ -407,8 +432,12 @@ int main(int argc, char* argv[]) {
         ncores = stoi(argv[3]);
     }
     auto p = sieve_of_atkin(lower, upper, ncores);
-    cout << p.size() << endl;
-    if (p.size() <= 100) {
+    size_x size = 0;
+    for (const auto &r: p) {
+        size += r.size();
+    }
+    cout << size << endl;
+    if (size <= 100) {
         cout << p << endl;
     }
     return 0;
