@@ -8,6 +8,7 @@
 using uint = unsigned int;
 // using ulong = unsigned long;
 using size_x = long;
+using ContType = std::vector<size_x>;
 
 using namespace std;
 
@@ -176,8 +177,8 @@ void do_r(size_x lower, size_x upper, vector<bool>& sieve, int myid=-1) {
 }
 
 
-vector<size_x> trueIndices(size_x lower, const vector<bool>& sieve) {
-    vector<size_x> p;
+ContType trueIndices(size_x lower, const vector<bool>& sieve) {
+    ContType p;
 	auto it = sieve.begin();
 	while (
         (
@@ -208,7 +209,7 @@ template <class T> ostream& operator<<(ostream& os, const vector<T>& elements) {
 }
 
 
-vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
+ContType sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
     vector<bool> sieve(upper - lower + 1, false);
     size_x x = 1;
     size_x x2 = x*x;
@@ -324,21 +325,21 @@ vector<size_x> sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
 }
 
 
-vector<size_x> do_pools(size_x lower, size_x upper, uint ncores) {
+ContType do_pools(size_x lower, size_x upper, uint ncores) {
     auto n = upper - lower;
     if (n < ncores) {
         ncores = n;
     }
     auto inc = size_x(n/ncores);
     thread t[ncores];
-    future<vector<size_x>> f[ncores];
-    vector<size_x> result;
+    future<ContType> f[ncores];
+    ContType result;
     size_x s0 = 0;
     size_x e0 = 0;
     for (unsigned int i=0; i<ncores; ++i) {
         s0 = i == 0 ? lower : size_x(i*inc) + lower;
         e0 = i == ncores - 1 ? upper : size_x((i+1)*inc) + lower - 1;
-        packaged_task<vector<size_x>(size_x, size_x, int)> task{sieve_of_atkin_loops};
+        packaged_task<ContType(size_x, size_x, int)> task{sieve_of_atkin_loops};
         f[i] = task.get_future();
         t[i] = thread{std::move(task), s0, e0, i};
     }
@@ -351,9 +352,9 @@ vector<size_x> do_pools(size_x lower, size_x upper, uint ncores) {
 }
 
 
-vector<size_x> primes {2, 3, 5, 7, 11, 13, 17, 19, 23};
+ContType primes {2, 3, 5, 7, 11, 13, 17, 19, 23};
 
-vector<size_x> sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool update=true) {
+ContType sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool update=true) {
     if (lower < 2) {
         throw runtime_error("lower cannot be less than 2");
     }
@@ -361,13 +362,13 @@ vector<size_x> sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool u
     if (upper < last) {
         auto low_idx = lower_bound(primes.begin(), primes.end(), lower);
         auto high_idx = upper_bound(primes.begin(), primes.end(), upper);
-        return vector<size_x>(low_idx, high_idx);
+        return ContType(low_idx, high_idx);
     }
     auto orig_lower = lower;
     if (lower < last or update) {
         lower = last + 2;
     }
-    vector<size_x> p;
+    ContType p;
     if (ncores == 1) {
         p = sieve_of_atkin_loops(lower, upper);
     }
@@ -378,19 +379,19 @@ vector<size_x> sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool u
         primes.insert(primes.end(), p.begin(), p.end());
         auto low_idx = lower_bound(primes.begin(), primes.end(), orig_lower);
         auto high_idx = upper_bound(primes.begin(), primes.end(), upper);
-        return vector<size_x>(low_idx, high_idx);
+        return ContType(low_idx, high_idx);
     }
     else {
         auto *q = &p;
-        auto r = shared_ptr<vector<size_x>>(new vector<size_x>());
+        auto r = shared_ptr<ContType>(new ContType());
         if (orig_lower < last) {
             *r = primes;
             r->insert(r->end(), p.begin(), p.end());
             q = r.get();
         }
-        auto low_idx = lower_bound(r->begin(), r->end(), lower);
-        auto high_idx = upper_bound(r->begin(), r->end(), upper);
-        return vector<size_x>(low_idx, high_idx);
+        auto low_idx = lower_bound(q->begin(), q->end(), lower);
+        auto high_idx = upper_bound(q->begin(), q->end(), upper);
+        return ContType(low_idx, high_idx);
     }
 }
 
