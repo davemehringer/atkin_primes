@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cmath>
 #include <future>
 #include <iostream>
 #include <thread>
@@ -13,9 +12,38 @@ using ContType = std::vector<size_x>;
 using namespace std;
 
 
+size_x sqrt_size_x(size_x n) {
+    /*
+    if (n <= 0) {
+        throw runtime_error("got " + to_string(n));
+    }
+    */  
+    int log2 = 0;
+    auto init = n;
+    while (n>>=1) {
+        ++log2;
+    }
+    int initGuessLog2 = log2 >> 1;
+    size_x guess = 1;
+    guess <<= initGuessLog2;
+    size_x prevGuess = -999;
+    int times = 0;
+    while(times <= 1) {
+        prevGuess = guess;
+        guess = (prevGuess + init/prevGuess) >> 1;
+        if (guess == prevGuess) {
+            return guess;
+        }
+        if (abs(prevGuess - guess) == 1) {
+            ++times;
+        }
+    }
+    return min(guess, prevGuess);
+}
+
 inline size_x init_y_for_n1(size_x lower, size_x _4x2, size_x& t2) {
     t2 = lower - _4x2;
-    auto y = t2 >= 9 ? size_x(sqrt(t2)) : 1;
+    auto y = t2 >= 9 ? sqrt_size_x(t2) : 1;
     if (y % 2 == 0) {
         y += 1;
 	}
@@ -40,8 +68,8 @@ void do_n1(
        return;
     }
     */
-    auto t2 = lower - _4x2;
-    auto y = t2 >= 9 ? size_x(sqrt(t2)) : 1;
+    size_x t2 = lower - _4x2;
+    auto y = t2 >= 9 ? sqrt_size_x(t2) : 1;
     if (y % 2 == 0) {
         y += 1;
 	}
@@ -108,12 +136,12 @@ void do_n1_x_mod_3_is_not_0(
 
 
 void do_n2_n3(size_x lower, size_x upper, size_x x, vector<bool>& sieve, int myid=-1) {
-    auto _3x2 = 3*x*x;
-    auto t2 = lower - _3x2;
+    size_x _3x2 = 3*x*x;
+    size_x t2 = lower - _3x2;
     auto end = upper - _3x2;
     size_x j2 = 0;
     if (end > 0 && x % 2 == 1) {
-        size_x y = t2 >= 9 ? size_x(sqrt(t2)) : 2;
+        size_x y = t2 >= 9 ? sqrt_size_x(t2) : 2;
         if (y % 2 == 1) {
             y += 1;
 		}
@@ -131,8 +159,8 @@ void do_n2_n3(size_x lower, size_x upper, size_x x, vector<bool>& sieve, int myi
             y2 = y*y;
         }
 	}
-    auto low_limit = _3x2 - upper;
-    size_x y = low_limit > 9 ? size_x(sqrt(low_limit)) : 1;
+    size_x low_limit = _3x2 - upper;
+    size_x y = low_limit > 9 ? sqrt_size_x(low_limit) : 1;
     if (y < x) {
         if ( (x % 2 + y % 2) % 2 == 0) {
             y += 1;
@@ -284,7 +312,7 @@ ContType sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
         while (_3x2 < upper) {
             t2 = lower - _3x2;
             end = upper - _3x2;
-            y = t2 >= 9 ? size_x(sqrt(t2)) : k;
+            y = t2 >= 9 ? sqrt_size_x(t2) : k;
             if (y % 2 == 1) {
                 y += 1;
 		    }
@@ -313,7 +341,7 @@ ContType sieve_of_atkin_loops(size_x lower, size_x upper, int myid=-1) {
             _3x2 = 3*x2;
             t2 = _3x2 - lower;
             low_limit = _3x2 - upper;
-            y = low_limit > 9 ? size_x(sqrt(low_limit)) : 1;
+            y = low_limit > 9 ? sqrt_size_x(low_limit) : 1;
             if (y < x) {
                 if ( (x % 2 + y % 2) % 2 == 0) {
                     y += 1;
@@ -421,6 +449,7 @@ vector<ContType> sieve_of_atkin(size_x lower, size_x upper, uint ncores=12, bool
 }
 
 
+
 int main(int argc, char* argv[]) {
     if (argc < 3 || argc > 4) {
         throw runtime_error("Incorrect number of parameters. Application takes two or three");
@@ -440,6 +469,18 @@ int main(int argc, char* argv[]) {
     if (size <= 100) {
         cout << p << endl;
     }
+    /*
+    cout << "begin sqrt" << endl;
+    for (size_x i = 1000000000; i<2000000000; ++i) {
+        auto k = int(sqrt(i));
+    }
+    cout << "end sqrt" << endl;
+    cout << "begin sqrt_size_x" << endl;
+    for (size_x i = 1000000000; i<2000000000; ++i) {
+        auto sq = sqrt_size_x(i);
+    }
+    cout << "end sqrt_size_x" << endl;
+    */
     return 0;
 }
 
